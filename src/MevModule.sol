@@ -41,8 +41,27 @@ contract MevModule {
         emit ContractRemoved(_contract);
     }
 
+    function call(
+        address _target,
+        bytes calldata _data,
+        uint256 _value
+    ) external payable onlySafe returns (bool _success, bytes memory _ret) {
+        (_success, _ret) = _target.call{value: _value}(_data);
+    }
+
+    function dcall(
+        address _target,
+        bytes calldata _data
+    ) external payable onlySafe returns (bool _success, bytes memory _ret) {
+        (_success, _ret) = _target.delegatecall(_data);
+    }
+
     modifier onlySafe() {
         if (msg.sender != address(SAFE)) revert OnlySafe();
         _;
     }
+
+    receive() external payable {}
+
+    fallback() external payable {}
 }
