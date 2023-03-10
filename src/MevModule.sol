@@ -8,8 +8,10 @@ contract MevModule {
     error OnlyExecutor();
     error OnlyWhitelistedContract();
 
-    event ExecutorAdded(bytes20 _executor);
-    event ExecutorRemoved(bytes20 _executor);
+    event ExecutorAdded(address _executor);
+    event ExectuorRemoed(address _executor);
+    event ContractAdded(address _contract);
+    event ContractRemoved(address _contract);
 
     Safe public immutable SAFE;
     mapping(address => bool) public isExecutor;
@@ -21,12 +23,22 @@ contract MevModule {
 
     function addExecutor(address _executor) external onlySafe {
         isExecutor[_executor] = true;
-        emit ExecutorAdded(bytes20(_executor));
+        emit ExecutorAdded(_executor);
     }
 
     function removeExecutor(address _executor) external onlySafe {
         isExecutor[_executor] = false;
-        emit ExecutorRemoved(bytes20(_executor));
+        emit ExectuorRemoed(_executor);
+    }
+
+    function addContract(address _contract) external onlySafe {
+        isWhitelistedContract[_contract] = true;
+        emit ContractAdded(_contract);
+    }
+
+    function removeContract(address _contract) external onlySafe {
+        isWhitelistedContract[_contract] = false;
+        emit ContractRemoved(_contract);
     }
 
     modifier onlySafe() {

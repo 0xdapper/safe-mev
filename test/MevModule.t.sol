@@ -45,7 +45,7 @@ contract MevModuleTest is Test {
         // safe.enableModule(address(mevModule));
     }
 
-    function testAddExecutor() public {
+    function testAddRemoveExecutor() public {
         vm.prank(owner);
         vm.expectRevert(abi.encodePacked(MevModule.OnlySafe.selector));
         mevModule.addExecutor(executor1);
@@ -54,5 +54,16 @@ contract MevModuleTest is Test {
         vm.prank(address(safe));
         mevModule.addExecutor(executor1);
         assertTrue(mevModule.isExecutor(executor1));
+    }
+
+    function testAddRemoveContract() public {
+        vm.prank(owner);
+        vm.expectRevert(abi.encodePacked(MevModule.OnlySafe.selector));
+        mevModule.addContract(address(mevModule));
+        assertFalse(mevModule.isWhitelistedContract(address(mevModule)));
+
+        vm.prank(address(safe));
+        mevModule.addContract(address(mevModule));
+        assertTrue(mevModule.isWhitelistedContract(address(mevModule)));
     }
 }
