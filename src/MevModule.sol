@@ -101,17 +101,50 @@ contract MevModule {
         _;
     }
 
-    function exec(
+    function execCall(
+        address _to,
+        bytes calldata _data
+    ) external returns (bytes memory _ret) {
+        _ret = _exec(_to, 0, _data, Enum.Operation.Call);
+    }
+
+    function execCallWithValue(
+        address _to,
+        bytes calldata _data,
+        uint _value
+    ) external returns (bytes memory _ret) {
+        _ret = _exec(_to, _value, _data, Enum.Operation.Call);
+    }
+
+    function execDelegateCall(address _to, bytes calldata _data) external {
+        _exec(_to, 0, _data, Enum.Operation.DelegateCall);
+    }
+
+    function execDelegateCallWithValue(
+        address _to,
+        bytes calldata _data,
+        uint _value
+    ) external {
+        _exec(_to, _value, _data, Enum.Operation.DelegateCall);
+    }
+
+    function _exec(
         address _to,
         uint _value,
         bytes calldata _data,
         Enum.Operation _operation
-    )
-        external
-        onlyExecutor
-        onlyWhitelisted(_to, _operation)
-        returns (bytes memory _ret)
-    {
+    ) internal returns (bytes memory _ret) {
+        if (!isExecutor[msg.sender]) revert OnlyExecutor();
+        if (_operation == Enum.Operation.Call) {
+            if (!isWhitelistedContractCall[_to])
+                revert OnlyWhitelistedContract();
+        } else if (_operation == Enum.Operation.DelegateCall) {
+            if (!isWhitelistedContractDelegateCall[_to])
+                revert OnlyWhitelistedContract();
+        } else {
+            revert InvalidData();
+        }
+
         bool success;
         if (_operation == Enum.Operation.Call) {
             (success, _ret) = SAFE.execTransactionFromModuleReturnData(
