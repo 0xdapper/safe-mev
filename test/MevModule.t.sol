@@ -1,7 +1,7 @@
 pragma solidity 0.8.19;
 
 import {Test} from "forge-std/Test.sol";
-import {Safe, MevModule} from "src/MevModule.sol";
+import {Safe, MevModule, Enum} from "src/MevModule.sol";
 import {SafeProxyFactory} from "safe-contracts/proxies/SafeProxyFactory.sol";
 
 contract MevModuleTest is Test {
@@ -59,11 +59,20 @@ contract MevModuleTest is Test {
     function testAddRemoveContract() public {
         vm.prank(owner);
         vm.expectRevert(abi.encodePacked(MevModule.OnlySafe.selector));
-        mevModule.addContract(address(mevModule));
-        assertFalse(mevModule.isWhitelistedContract(address(mevModule)));
+        mevModule.addContract(address(mevModule), Enum.Operation.Call);
+        assertFalse(mevModule.isWhitelistedContractCall(address(mevModule)));
 
         vm.prank(address(safe));
-        mevModule.addContract(address(mevModule));
-        assertTrue(mevModule.isWhitelistedContract(address(mevModule)));
+        mevModule.addContract(address(mevModule), Enum.Operation.Call);
+        assertTrue(mevModule.isWhitelistedContractCall(address(mevModule)));
+
+        vm.prank(owner);
+        vm.expectRevert(abi.encodePacked(MevModule.OnlySafe.selector));
+        mevModule.removeContract(address(mevModule), Enum.Operation.Call);
+        assertTrue(mevModule.isWhitelistedContractCall(address(mevModule)));
+
+        vm.prank(address(safe));
+        mevModule.removeContract(address(mevModule), Enum.Operation.Call);
+        assertFalse(mevModule.isWhitelistedContractCall(address(mevModule)));
     }
 }
