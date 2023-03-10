@@ -32,3 +32,13 @@ jobs:
         run: |
           forge test -vvv
         id: test
+
+      - name: Verify gas snapshot is up-to-date
+        run: |
+          mv .gas-snapshot .gas-snapshot.old
+          forge snapshot
+          diff .gas-snapshot.old .gas-snapshot
+          if [ $? -ne 0 ]; then
+              echo "Updated snapshot not committed";
+              exit 1;
+          fi
